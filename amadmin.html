@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adhi's Secret Key Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        body { background: #fdf2f4; font-family: 'Poppins', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+    <div class="glass p-10 rounded-2xl max-w-md w-full text-center">
+        <h2 class="text-2xl font-serif text-gray-800 italic mb-4">Secret Code Generator</h2>
+        <p class="text-xs text-gray-500 mb-6">Type your password/answer below to turn it into a secure lock.</p>
+        
+        <input type="text" id="input" placeholder="Type secret here..." class="w-full p-3 border border-pink-200 rounded-lg mb-4 text-center focus:outline-none focus:border-yellow-500">
+        
+        <button onclick="generate()" class="bg-gray-900 text-white px-6 py-2 rounded-full text-sm tracking-widest hover:bg-gray-700 transition">LOCK IT 🔒</button>
+        
+        <div id="output" class="mt-6 p-3 bg-gray-100 rounded text-xs break-all font-mono select-all hidden text-gray-600"></div>
+    </div>
+
+    <script>
+        async function generate() {
+            const text = document.getElementById('input').value.toLowerCase().trim();
+            if(!text) return;
+            const msgBuffer = new TextEncoder().encode(text);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            const out = document.getElementById('output');
+            out.innerText = hashHex;
+            out.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
