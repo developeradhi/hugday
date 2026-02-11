@@ -7,14 +7,13 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Italiana&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --gold: #D4AF37;
             --dark: #050505;
-            --glass: rgba(20, 20, 20, 0.6);
+            --glass: rgba(20, 20, 20, 0.8);
         }
 
         body {
@@ -23,20 +22,9 @@
             font-family: 'Montserrat', sans-serif;
             overflow-x: hidden;
             margin: 0;
-            cursor: none; /* Custom cursor used */
-        }
-
-        /* 🖱️ Custom Luxury Cursor */
-        #cursor {
-            width: 20px; height: 20px;
-            border: 1px solid var(--gold);
-            border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 9999;
-            transition: transform 0.1s;
-        }
-        #cursor-dot {
-            width: 4px; height: 4px; background: var(--gold);
-            border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999;
+            /* Prevent scrolling during the lock phase */
+            height: 100vh; 
+            width: 100vw;
         }
 
         /* ✨ Animated Grain Background */
@@ -61,203 +49,193 @@
         /* Glass Cards */
         .glass-panel {
             background: var(--glass);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
         }
 
-        .hidden-screen { display: none; opacity: 0; }
+        /* Layout Utility */
+        .screen-section {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; 
+            align-items: center; justify-content: center;
+            z-index: 10;
+            background: var(--dark);
+            transition: opacity 1s ease;
+        }
         
-        /* 3D Photo Float */
-        .photo-card { transform-style: preserve-3d; transform: perspective(1000px); }
+        .hidden { display: none !important; opacity: 0; }
+
+        /* Photo Cards */
+        .photo-container {
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+        .photo-container img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 1s ease;
+        }
+        .photo-container:hover img { transform: scale(1.1); }
     </style>
 </head>
 <body>
 
-    <div id="cursor"></div><div id="cursor-dot"></div>
     <div class="bg-noise"></div>
 
     <audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
 
-    <section id="loader" class="h-screen flex flex-col items-center justify-center relative z-50 bg-black">
+    <section id="loader" class="screen-section z-50">
         <div class="w-64 h-1 bg-gray-800 rounded-full overflow-hidden mb-4">
             <div id="progress-bar" class="h-full bg-[#D4AF37] w-0"></div>
         </div>
-        <p id="loader-text" class="font-royal text-xs tracking-[0.3em] text-[#D4AF37] animate-pulse">ESTABLISHING SECURE CONNECTION...</p>
+        <p id="loader-text" class="font-royal text-xs tracking-[0.3em] text-[#D4AF37] animate-pulse">INITIALIZING...</p>
     </section>
 
-    <section id="login" class="hidden-screen h-screen flex flex-col items-center justify-center relative z-40 px-6">
-        <div class="glass-panel p-12 rounded-2xl max-w-md w-full text-center relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-50"></div>
+    <section id="login" class="screen-section hidden z-40">
+        <div class="glass-panel p-10 rounded-2xl max-w-md w-[90%] text-center">
+            <h1 class="font-elegant text-4xl mb-2 text-white">Restricted Access</h1>
+            <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 mb-10">Only for Her</p>
             
-            <h1 class="font-elegant text-4xl mb-2 text-white">Adhi's Heart</h1>
-            <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 mb-10">Restricted Access Area</p>
+            <input type="password" id="password" placeholder="PASSWORD" 
+                class="w-full bg-transparent border-b border-white/20 py-4 text-center text-xl tracking-[0.3em] text-[#D4AF37] outline-none focus:border-[#D4AF37] transition-all mb-8 font-royal">
             
-            <input type="password" id="password" placeholder="ENTER PASSCODE" 
-                class="w-full bg-white/5 border-b border-white/20 py-4 text-center text-xl tracking-[0.5em] text-[#D4AF37] outline-none focus:border-[#D4AF37] transition-all mb-8 placeholder-gray-600 font-royal">
-            
-            <button onclick="checkAccess()" class="group relative px-8 py-3 bg-[#D4AF37] text-black font-bold tracking-[0.2em] text-xs hover:bg-white transition-colors duration-500 w-full">
-                AUTHENTICATE
+            <button onclick="checkAccess()" class="w-full py-4 bg-[#D4AF37] text-black font-bold tracking-[0.2em] text-xs hover:bg-white transition-colors duration-500 rounded-lg">
+                UNLOCK HEART
             </button>
-            
-            <p id="error" class="text-red-500 text-xs mt-4 tracking-widest opacity-0">ACCESS DENIED</p>
+            <p id="error" class="text-red-500 text-xs mt-4 tracking-widest opacity-0">INCORRECT KEY</p>
         </div>
     </section>
 
-    <section id="apology" class="hidden-screen min-h-screen flex flex-col items-center justify-center relative z-30 px-6 text-center">
-        <div class="max-w-3xl">
-            <h2 class="font-royal text-5xl md:text-7xl text-white/10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -z-10 pointer-events-none">FORGIVE</h2>
+    <section id="apology" class="screen-section hidden z-30 px-6">
+        <div class="max-w-2xl text-center">
+            <p class="font-royal text-xs text-red-500 tracking-[0.5em] mb-6 animate-pulse">⚠️ ERROR: HEART DISCONNECTED</p>
             
-            <p class="font-elegant text-2xl md:text-3xl leading-relaxed mb-8 gold-text">
-                "The silence between us is louder than any noise."
-            </p>
+            <h2 class="font-elegant text-3xl md:text-5xl leading-tight text-white mb-8">
+                "I am lost without you."
+            </h2>
             
-            <div class="glass-panel p-10 rounded-xl text-left border-l-2 border-[#D4AF37] mb-12">
-                <p class="font-light tracking-wide leading-loose text-gray-300">
+            <div class="glass-panel p-8 text-left rounded-xl border-l-2 border-[#D4AF37] mb-10">
+                <p class="font-light tracking-wide leading-loose text-gray-300 text-sm md:text-base">
                     My Love,<br><br>
-                    I am writing this code because my words failed yesterday. I was wrong to quarrel. I was wrong to make you feel anything less than a queen. <br><br>
-                    I have been staring at your photos, feeling completely lonely. I built this entire digital world just to ask for one thing: <strong>Your Smile.</strong>
+                    I am writing this code because my words failed yesterday. I was wrong to quarrel. The silence today has been deafening, and I feel so lonely.<br><br>
+                    I built this entire world just to see your smile again. <strong>Please forgive me.</strong>
                 </p>
             </div>
 
-            <div class="relative">
+            <div class="relative inline-block">
                 <button id="forgive-btn" onmousedown="startForgive()" onmouseup="stopForgive()" ontouchstart="startForgive()" ontouchend="stopForgive()" 
-                    class="w-24 h-24 rounded-full border border-white/20 flex items-center justify-center relative overflow-hidden group">
-                    <span class="text-2xl relative z-10 group-hover:scale-125 transition-transform">❤️</span>
+                    class="w-24 h-24 rounded-full border border-white/20 flex items-center justify-center relative overflow-hidden group mx-auto">
+                    <span class="text-3xl relative z-10 group-hover:scale-125 transition-transform">❤️</span>
                     <div id="fill-circle" class="absolute inset-0 bg-[#D4AF37] scale-0 rounded-full transition-transform duration-[2000ms] ease-linear origin-center"></div>
                 </button>
-                <p class="mt-4 text-[10px] tracking-[0.3em] text-gray-500">HOLD BUTTON TO DELETE ANGER</p>
+                <p class="mt-4 text-[10px] tracking-[0.3em] text-gray-500 uppercase">Hold button to forgive</p>
             </div>
         </div>
     </section>
 
-    <section id="paradise" class="hidden-screen min-h-screen relative z-20 pb-20 pt-10">
+    <section id="paradise" class="hidden min-h-screen w-full relative z-20 bg-black overflow-y-auto">
         
-        <div class="flex justify-between px-10 mb-10">
-            <span class="font-royal text-[#D4AF37] tracking-widest text-xs">CONNECTED: ADHI ❤️ HER</span>
-            <span onclick="toggleMusic()" class="cursor-pointer text-xs tracking-widest border-b border-transparent hover:border-[#D4AF37] transition-all">TOGGLE MUSIC</span>
-        </div>
-
-        <div class="max-w-5xl mx-auto px-6">
+        <div class="max-w-4xl mx-auto px-6 py-12 text-center">
             
-            <div class="text-center mb-24 relative">
-                <h1 class="font-elegant text-5xl md:text-7xl mb-4 text-white">The Safest Place</h1>
-                <p class="font-light tracking-[0.5em] text-gray-500 uppercase text-xs mb-12">Is in my arms</p>
+            <div class="flex justify-between items-center mb-16 border-b border-white/10 pb-4">
+                <span class="font-royal text-[#D4AF37] tracking-widest text-xs">STATUS: CONNECTED ❤️</span>
+                <button onclick="document.getElementById('bg-music').play()" class="text-[10px] border border-white/30 px-3 py-1 rounded-full hover:bg-white hover:text-black transition">PLAY MUSIC 🎵</button>
+            </div>
+
+            <div class="mb-20">
+                <h1 class="font-elegant text-5xl md:text-6xl text-white mb-4">Happy Hug Day</h1>
+                <p class="text-gray-400 text-xs tracking-[0.3em] mb-8">DISTANCE MEANS NOTHING</p>
+                <div class="w-40 h-40 mx-auto bg-[#D4AF37]/10 rounded-full flex items-center justify-center border border-[#D4AF37] shadow-[0_0_30px_rgba(212,175,55,0.3)] animate-pulse">
+                    <span class="text-6xl">🫂</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 text-left">
                 
-                <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mb-12"></div>
-                
-                <div class="glass-panel inline-block px-12 py-4 rounded-full border border-[#D4AF37]/30 animate-pulse">
-                    <span class="font-royal text-xl gold-text">HAPPY HUG DAY, MY LOVE</span>
+                <div class="glass-panel p-3 rounded-xl">
+                    <div class="photo-container">
+                        <img src="photo1.jpeg" onerror="this.src='https://images.unsplash.com/photo-1511253247557-5eb69a8e3e22?q=80&w=800&auto=format&fit=crop'">
+                    </div>
+                    <p class="mt-4 font-royal text-[#D4AF37] text-xs">MEMORY 01</p>
+                    <p class="font-elegant text-lg">Us, Always</p>
                 </div>
+
+                <div class="glass-panel p-3 rounded-xl md:-mt-8">
+                    <div class="photo-container">
+                        <img src="photo2.jpeg" onerror="this.src='https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=800&auto=format&fit=crop'">
+                    </div>
+                    <p class="mt-4 font-royal text-[#D4AF37] text-xs">MEMORY 02</p>
+                    <p class="font-elegant text-lg">My Peace</p>
+                </div>
+
+                <div class="glass-panel p-3 rounded-xl">
+                    <div class="photo-container">
+                        <img src="photo3.jpeg" onerror="this.src='https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=800&auto=format&fit=crop'">
+                    </div>
+                    <p class="mt-4 font-royal text-[#D4AF37] text-xs">MEMORY 03</p>
+                    <p class="font-elegant text-lg">Forever</p>
+                </div>
+
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
-                <div class="photo-card h-[400px] relative group" data-tilt>
-                    <div class="absolute inset-0 bg-[#D4AF37] transform translate-x-2 translate-y-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="absolute inset-0 bg-gray-900 rounded-lg overflow-hidden border border-white/10">
-                        <img src="photo1.jpeg" class="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-700">
-                    </div>
-                    <div class="absolute bottom-6 left-6">
-                        <p class="font-royal text-xs text-[#D4AF37]">MEMORY 01</p>
-                        <p class="font-elegant text-xl">The Beginning</p>
+            <div class="glass-panel p-6 rounded-full inline-flex items-center gap-4 mb-20 max-w-md w-full justify-center">
+                <button onclick="document.getElementById('voice').play()" class="w-12 h-12 rounded-full bg-[#D4AF37] flex items-center justify-center text-black font-bold">▶</button>
+                <div class="text-left flex-1">
+                    <p class="text-[10px] uppercase tracking-widest text-gray-400">Adhi's Apology</p>
+                    <div class="h-1 bg-gray-700 w-full mt-2 rounded-full overflow-hidden">
+                        <div class="h-full bg-white w-1/2"></div>
                     </div>
                 </div>
-
-                <div class="photo-card h-[400px] relative group md:-mt-12" data-tilt>
-                    <div class="absolute inset-0 bg-[#D4AF37] transform translate-x-2 translate-y-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="absolute inset-0 bg-gray-900 rounded-lg overflow-hidden border border-white/10">
-                        <img src="photo2.jpeg" class="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-700">
-                    </div>
-                    <div class="absolute bottom-6 left-6">
-                        <p class="font-royal text-xs text-[#D4AF37]">MEMORY 02</p>
-                        <p class="font-elegant text-xl">My Happiness</p>
-                    </div>
-                </div>
-
-                <div class="photo-card h-[400px] relative group" data-tilt>
-                    <div class="absolute inset-0 bg-[#D4AF37] transform translate-x-2 translate-y-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="absolute inset-0 bg-gray-900 rounded-lg overflow-hidden border border-white/10">
-                        <img src="photo3.jpeg" class="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-700">
-                    </div>
-                    <div class="absolute bottom-6 left-6">
-                        <p class="font-royal text-xs text-[#D4AF37]">MEMORY 03</p>
-                        <p class="font-elegant text-xl">My Forever</p>
-                    </div>
-                </div>
+                <audio id="voice" src="voice.mp3"></audio>
             </div>
 
-            <div class="text-center mb-24">
-                <div class="inline-flex items-center gap-4 glass-panel px-8 py-4 rounded-full">
-                    <button onclick="document.getElementById('voice').play()" class="w-12 h-12 rounded-full bg-[#D4AF37] flex items-center justify-center text-black hover:scale-110 transition-transform">▶</button>
-                    <div class="text-left">
-                        <p class="text-[10px] uppercase tracking-widest text-gray-400">Audio Message</p>
-                        <div class="w-32 h-1 bg-gray-700 rounded-full mt-1 overflow-hidden">
-                            <div class="w-1/2 h-full bg-white"></div>
-                        </div>
-                    </div>
-                    <audio id="voice" src="voice.mp3"></audio>
-                </div>
-            </div>
-            
+            <footer class="pb-10 text-gray-600 text-[10px] tracking-widest">
+                BUILT WITH TEARS & CODE BY ADHI
+            </footer>
         </div>
     </section>
 
     <canvas id="confetti" class="fixed inset-0 pointer-events-none z-[100]"></canvas>
 
     <script>
-        // --- 💎 CONFIGURATION ---
-        // 1. Generate hash here: https://passwordsgenerator.net/sha256-hash-generator/
-        // 2. Paste the hash of her password below.
+        // --- 💎 1. SECURITY SETUP ---
+        // Paste your generated hash inside the quotes below
         const SECRET_HASH = "65882a8e20dc7b30f6266f79fda3aacee0ad347ec3ad64d22ca32580fe9cced8"; 
 
-        // --- 🖱️ Custom Cursor Logic ---
-        const cursor = document.getElementById('cursor');
-        const cursorDot = document.getElementById('cursor-dot');
-        
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-            cursorDot.style.left = e.clientX + 'px';
-            cursorDot.style.top = e.clientY + 'px';
-        });
-
-        // --- 📡 Loader Logic ---
+        // --- 2. LOADER LOGIC ---
         window.onload = () => {
-            const texts = ["CONNECTING TO SATELLITE...", "ENCRYPTING EMOTIONS...", "LOCATING HEART...", "CONNECTION ESTABLISHED"];
-            const textEl = document.getElementById('loader-text');
-            let i = 0;
-            
-            // Text cycle
-            setInterval(() => {
-                if(i < texts.length) textEl.innerText = texts[i++];
-            }, 800);
-
-            // Progress Bar
-            gsap.to("#progress-bar", {width: "100%", duration: 3.5, ease: "power2.inOut", onComplete: () => {
-                gsap.to("#loader", {y: "-100%", duration: 1, delay: 0.5, ease: "expo.inOut"});
-                document.getElementById('login').style.display = "flex";
-                gsap.to("#login", {opacity: 1, duration: 1, delay: 1});
+            gsap.to("#progress-bar", {width: "100%", duration: 2.5, ease: "power2.inOut", onComplete: () => {
+                // Hide Loader
+                gsap.to("#loader", {opacity: 0, duration: 0.5, onComplete: () => {
+                    document.getElementById('loader').style.display = "none";
+                    // Show Login
+                    document.getElementById('login').classList.remove("hidden");
+                    gsap.fromTo("#login", {opacity: 0, scale: 0.9}, {opacity: 1, scale: 1, duration: 1});
+                }});
             }});
         };
 
-        // --- 🔐 Login Logic ---
-        async function sha256(message) {
-            const msgBuffer = new TextEncoder().encode(message.toLowerCase().trim());
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
+        // --- 3. LOGIN LOGIC ---
         async function checkAccess() {
             const input = document.getElementById('password').value;
-            const hashed = await sha256(input);
             
-            // REMOVE "|| true" AFTER TESTING TO SECURE IT
+            // Hashing Logic (Java-style security)
+            const msgBuffer = new TextEncoder().encode(input.toLowerCase().trim());
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashed = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            // Validate (Remove '|| true' after you paste your real hash!)
             if (hashed === SECRET_HASH || SECRET_HASH === "PUT_YOUR_GENERATED_HASH_HERE") {
-                gsap.to("#login", {scale: 0.9, opacity: 0, duration: 0.8, onComplete: () => {
-                    document.getElementById('login').style.display = 'none';
-                    document.getElementById('apology').style.display = 'flex';
-                    gsap.fromTo("#apology", {opacity: 0, y: 50}, {opacity: 1, y: 0, duration: 1});
+                gsap.to("#login", {opacity: 0, y: -50, duration: 0.8, onComplete: () => {
+                    document.getElementById('login').classList.add("hidden");
+                    document.getElementById('apology').classList.remove("hidden");
+                    gsap.fromTo("#apology", {opacity: 0}, {opacity: 1, duration: 1});
                 }});
             } else {
                 gsap.to("#error", {opacity: 1, yoyo: true, repeat: 1, duration: 2});
@@ -265,21 +243,24 @@
             }
         }
 
-        // --- ❤️ Forgive Button Logic ---
+        // --- 4. FORGIVE BUTTON LOGIC ---
         let holdTimer;
         function startForgive() {
-            const fill = document.getElementById('fill-circle');
-            fill.style.transform = "scale(1)"; // Start expanding
-            
+            document.getElementById('fill-circle').style.transform = "scale(1)";
             holdTimer = setTimeout(() => {
-                // Success action
+                // Success: Go to Paradise
                 document.getElementById('bg-music').volume = 0.5;
-                document.getElementById('bg-music').play().catch(e=>console.log(e));
+                document.getElementById('bg-music').play().catch(e => console.log(e));
                 
                 gsap.to("#apology", {opacity: 0, duration: 1.5, onComplete: () => {
-                    document.getElementById('apology').style.display = 'none';
-                    document.getElementById('paradise').style.display = 'block';
-                    gsap.fromTo("#paradise", {opacity: 0}, {opacity: 1, duration: 2});
+                    document.getElementById('apology').classList.add("hidden");
+                    // Unlock scrolling for main page
+                    document.body.style.height = "auto"; 
+                    document.body.style.overflowY = "auto";
+                    
+                    const paradise = document.getElementById('paradise');
+                    paradise.classList.remove("hidden");
+                    gsap.fromTo(paradise, {opacity: 0}, {opacity: 1, duration: 2});
                     startConfetti();
                 }});
             }, 2000); // 2 seconds hold
@@ -287,29 +268,22 @@
 
         function stopForgive() {
             clearTimeout(holdTimer);
-            const fill = document.getElementById('fill-circle');
-            fill.style.transform = "scale(0)"; // Reset if released too early
+            document.getElementById('fill-circle').style.transform = "scale(0)";
         }
 
-        function toggleMusic() {
-            const audio = document.getElementById('bg-music');
-            if(audio.paused) audio.play(); else audio.pause();
-        }
-
-        // --- 🎉 Confetti Logic ---
+        // --- 5. CONFETTI ---
         function startConfetti() {
             const canvas = document.getElementById('confetti');
             const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             
             let particles = [];
-            const colors = ['#D4AF37', '#ffffff', '#F8E1E7'];
-            
             for(let i=0; i<100; i++) {
                 particles.push({
-                    x: Math.random() * canvas.width, y: Math.random() * canvas.height - canvas.height,
-                    size: Math.random() * 3 + 1, speed: Math.random() * 3 + 1,
-                    color: colors[Math.floor(Math.random() * colors.length)]
+                    x: Math.random() * canvas.width, y: -10,
+                    size: Math.random() * 5 + 2,
+                    speed: Math.random() * 3 + 1,
+                    color: `hsl(${Math.random()*50 + 40}, 100%, 70%)` // Gold/Yellow hues
                 });
             }
             
@@ -325,11 +299,6 @@
             }
             animate();
         }
-
-        // Initialize 3D Tilt
-        VanillaTilt.init(document.querySelectorAll(".photo-card"), {
-            max: 15, speed: 400, glare: true, "max-glare": 0.2
-        });
     </script>
 </body>
 </html>
