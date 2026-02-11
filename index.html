@@ -3,295 +3,365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocol: RECONNECT ❤️</title>
+    <title>Connection: ESTABLISHED</title>
     
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@200;400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Italiana&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
 
     <style>
         :root {
             --gold: #D4AF37;
-            --dark: #050505;
-            --glass: rgba(20, 20, 20, 0.8);
+            --dark: #020202;
+            --glass: rgba(255, 255, 255, 0.03);
         }
 
         body {
             background-color: var(--dark);
-            color: #fff;
+            color: white;
             font-family: 'Montserrat', sans-serif;
-            overflow-x: hidden;
+            overflow: hidden; /* Locked until unlocked */
             margin: 0;
-            /* Prevent scrolling during the lock phase */
-            height: 100vh; 
-            width: 100vw;
+            height: 100vh;
         }
 
-        /* ✨ Animated Grain Background */
-        .bg-noise {
+        /* 🎥 Cinematic Noise & Scanlines */
+        .scanlines {
             position: fixed; inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-            pointer-events: none; z-index: 0;
-        }
-
-        /* Luxury Typography */
-        .font-royal { font-family: 'Cinzel', serif; }
-        .font-elegant { font-family: 'Italiana', serif; }
-
-        /* ✨ Golden Text Shine */
-        .gold-text {
-            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7);
-            -webkit-background-clip: text; color: transparent;
-            background-size: 200% auto; animation: shine 4s linear infinite;
-        }
-        @keyframes shine { to { background-position: 200% center; } }
-
-        /* Glass Cards */
-        .glass-panel {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            box-shadow: 0 0 50px rgba(0,0,0,0.9);
-        }
-
-        /* Layout Utility */
-        .screen-section {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; 
-            align-items: center; justify-content: center;
-            z-index: 10;
-            background: var(--dark);
-            transition: opacity 1s ease;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            pointer-events: none; z-index: 50; opacity: 0.3;
         }
         
-        .hidden { display: none !important; opacity: 0; }
+        /* Typography */
+        .font-royal { font-family: 'Cinzel', serif; }
+        .font-script { font-family: 'Pinyon Script', cursive; }
 
-        /* Photo Cards */
-        .photo-container {
-            width: 100%;
-            height: 300px;
-            overflow: hidden;
-            border-radius: 1rem;
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
+        /* ✨ Gold Text Gradient */
+        .text-gold {
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7);
+            -webkit-background-clip: text; color: transparent;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
         }
-        .photo-container img {
-            width: 100%; height: 100%; object-fit: cover;
-            transition: transform 1s ease;
+
+        /* Glass Panel */
+        .glass-hud {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
-        .photo-container:hover img { transform: scale(1.1); }
+
+        /* Animations */
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        .loader-bar {
+            box-shadow: 0 0 10px #D4AF37, 0 0 20px #D4AF37;
+        }
+        
+        /* 3D Photo Float */
+        .tilt-card { transform-style: preserve-3d; transform: perspective(1000px); }
+        .tilt-card img { transform: translateZ(20px); }
+        
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1s ease;
+            background: var(--dark);
+            z-index: 10;
+        }
+        .hidden { display: none; opacity: 0; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: #000; }
     </style>
 </head>
 <body>
 
-    <div class="bg-noise"></div>
+    <div class="scanlines"></div>
 
-    <audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
+    <audio id="bg-music" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="voice-note">
+        <source src="voice.mp3" type="audio/mpeg">
+    </audio>
 
-    <section id="loader" class="screen-section z-50">
-        <div class="w-64 h-1 bg-gray-800 rounded-full overflow-hidden mb-4">
-            <div id="progress-bar" class="h-full bg-[#D4AF37] w-0"></div>
+    <section id="screen-server" class="screen z-50">
+        <div class="w-full max-w-lg px-8">
+            <div class="flex justify-between text-[10px] text-[#D4AF37] tracking-[0.3em] mb-2 font-mono">
+                <span>SERVER: ADHI_MAIN</span>
+                <span>TARGET: HER_HEART</span>
+            </div>
+            
+            <div class="h-1 bg-gray-900 w-full mb-4 overflow-hidden">
+                <div id="load-bar" class="h-full bg-[#D4AF37] w-0 loader-bar"></div>
+            </div>
+            
+            <div class="text-left font-mono text-xs text-green-400 h-20 overflow-hidden">
+                <p id="terminal-text">>> INITIATING PROTOCOL...</p>
+            </div>
         </div>
-        <p id="loader-text" class="font-royal text-xs tracking-[0.3em] text-[#D4AF37] animate-pulse">INITIALIZING...</p>
     </section>
 
-    <section id="login" class="screen-section hidden z-40">
-        <div class="glass-panel p-10 rounded-2xl max-w-md w-[90%] text-center">
-            <h1 class="font-elegant text-4xl mb-2 text-white">Restricted Access</h1>
-            <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 mb-10">Only for Her</p>
+    <section id="screen-lock" class="screen hidden z-40">
+        <div class="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center"></div>
+        
+        <div class="glass-hud p-12 rounded-none md:rounded-2xl max-w-md w-full text-center relative z-10 border-t-4 border-t-[#D4AF37]">
+            <p class="text-[10px] tracking-[0.4em] text-gray-400 mb-6 uppercase">Biometric Security</p>
+            <h1 class="font-royal text-3xl mb-8 text-white">Identity Verification</h1>
             
-            <input type="password" id="password" placeholder="PASSWORD" 
-                class="w-full bg-transparent border-b border-white/20 py-4 text-center text-xl tracking-[0.3em] text-[#D4AF37] outline-none focus:border-[#D4AF37] transition-all mb-8 font-royal">
+            <div class="relative group mb-8">
+                <input type="password" id="password" placeholder="ENTER PASSCODE" 
+                    class="w-full bg-black/40 border border-white/10 py-4 px-6 text-center text-xl tracking-[0.5em] text-[#D4AF37] outline-none focus:border-[#D4AF37] transition-all font-royal placeholder-gray-700">
+                <div class="absolute top-0 left-0 w-full h-[2px] bg-[#D4AF37] opacity-0 group-focus-within:opacity-100 group-focus-within:animate-[scan_2s_infinite]"></div>
+            </div>
             
-            <button onclick="checkAccess()" class="w-full py-4 bg-[#D4AF37] text-black font-bold tracking-[0.2em] text-xs hover:bg-white transition-colors duration-500 rounded-lg">
-                UNLOCK HEART
+            <button onclick="checkAccess()" class="w-full py-4 bg-[#D4AF37] text-black font-bold tracking-[0.3em] text-xs hover:bg-white transition-colors duration-500 uppercase">
+                Access Heart
             </button>
-            <p id="error" class="text-red-500 text-xs mt-4 tracking-widest opacity-0">INCORRECT KEY</p>
+            <p id="error-msg" class="text-red-500 text-[10px] mt-4 tracking-widest opacity-0 font-mono">>> ACCESS DENIED //</p>
         </div>
     </section>
 
-    <section id="apology" class="screen-section hidden z-30 px-6">
-        <div class="max-w-2xl text-center">
-            <p class="font-royal text-xs text-red-500 tracking-[0.5em] mb-6 animate-pulse">⚠️ ERROR: HEART DISCONNECTED</p>
+    <section id="screen-apology" class="screen hidden z-30 px-6">
+        <div class="max-w-3xl text-center relative">
+            <div class="absolute -top-20 left-1/2 transform -translate-x-1/2 w-px h-20 bg-gradient-to-b from-transparent to-[#D4AF37]"></div>
             
-            <h2 class="font-elegant text-3xl md:text-5xl leading-tight text-white mb-8">
-                "I am lost without you."
+            <h2 class="font-royal text-4xl md:text-6xl text-white mb-8 leading-tight">
+                "Silence is the loudest cry."
             </h2>
             
-            <div class="glass-panel p-8 text-left rounded-xl border-l-2 border-[#D4AF37] mb-10">
-                <p class="font-light tracking-wide leading-loose text-gray-300 text-sm md:text-base">
-                    My Love,<br><br>
-                    I am writing this code because my words failed yesterday. I was wrong to quarrel. The silence today has been deafening, and I feel so lonely.<br><br>
-                    I built this entire world just to see your smile again. <strong>Please forgive me.</strong>
+            <div class="glass-hud p-10 text-left border-l-2 border-[#D4AF37] mb-12 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-20">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="white"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </div>
+                <p class="font-light tracking-wide leading-loose text-gray-300 text-sm md:text-lg">
+                    <span class="text-[#D4AF37] font-bold">Adhi here.</span><br><br>
+                    I messed up. The quarrel we had... it broke the connection between us, and I've been feeling like a server offline—useless and empty. <br><br>
+                    I don't want to be right. I just want to be with you. <br>
+                    <span class="italic text-white">Please hold the button below to accept my apology.</span>
                 </p>
             </div>
 
             <div class="relative inline-block">
-                <button id="forgive-btn" onmousedown="startForgive()" onmouseup="stopForgive()" ontouchstart="startForgive()" ontouchend="stopForgive()" 
-                    class="w-24 h-24 rounded-full border border-white/20 flex items-center justify-center relative overflow-hidden group mx-auto">
-                    <span class="text-3xl relative z-10 group-hover:scale-125 transition-transform">❤️</span>
+                <button onmousedown="startForgive()" onmouseup="stopForgive()" ontouchstart="startForgive()" ontouchend="stopForgive()" 
+                    class="w-20 h-20 rounded-full border border-white/20 flex items-center justify-center relative overflow-hidden group mx-auto cursor-pointer">
                     <div id="fill-circle" class="absolute inset-0 bg-[#D4AF37] scale-0 rounded-full transition-transform duration-[2000ms] ease-linear origin-center"></div>
+                    <span class="text-2xl relative z-10 animate-pulse">❤️</span>
                 </button>
-                <p class="mt-4 text-[10px] tracking-[0.3em] text-gray-500 uppercase">Hold button to forgive</p>
+                <p class="mt-4 text-[9px] tracking-[0.3em] text-gray-500 uppercase">HOLD TO FORGIVE</p>
             </div>
         </div>
     </section>
 
-    <section id="paradise" class="hidden min-h-screen w-full relative z-20 bg-black overflow-y-auto">
+    <section id="screen-paradise" class="hidden min-h-screen w-full relative z-20 bg-[#050505] overflow-y-auto">
         
-        <div class="max-w-4xl mx-auto px-6 py-12 text-center">
+        <div class="w-full h-screen flex flex-col items-center justify-center relative">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900 via-[#000] to-[#000] opacity-80"></div>
             
-            <div class="flex justify-between items-center mb-16 border-b border-white/10 pb-4">
-                <span class="font-royal text-[#D4AF37] tracking-widest text-xs">STATUS: CONNECTED ❤️</span>
-                <button onclick="document.getElementById('bg-music').play()" class="text-[10px] border border-white/30 px-3 py-1 rounded-full hover:bg-white hover:text-black transition">PLAY MUSIC 🎵</button>
-            </div>
+            <p class="text-[#D4AF37] tracking-[0.5em] text-xs mb-6 font-royal relative z-10">CONNECTION RESTORED</p>
+            <h1 class="font-script text-6xl md:text-8xl text-white mb-4 relative z-10">Happy Hug Day</h1>
+            <p class="text-gray-500 text-xs tracking-[0.2em] relative z-10">YOU ARE MY HOME</p>
 
-            <div class="mb-20">
-                <h1 class="font-elegant text-5xl md:text-6xl text-white mb-4">Happy Hug Day</h1>
-                <p class="text-gray-400 text-xs tracking-[0.3em] mb-8">DISTANCE MEANS NOTHING</p>
-                <div class="w-40 h-40 mx-auto bg-[#D4AF37]/10 rounded-full flex items-center justify-center border border-[#D4AF37] shadow-[0_0_30px_rgba(212,175,55,0.3)] animate-pulse">
-                    <span class="text-6xl">🫂</span>
-                </div>
-            </div>
+            <div class="absolute bottom-10 animate-bounce text-[#D4AF37]">↓</div>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 text-left">
-                
-                <div class="glass-panel p-3 rounded-xl">
-                    <div class="photo-container">
-                        <img src="photo1.jpeg" onerror="this.src='https://images.unsplash.com/photo-1511253247557-5eb69a8e3e22?q=80&w=800&auto=format&fit=crop'">
-                    </div>
-                    <p class="mt-4 font-royal text-[#D4AF37] text-xs">MEMORY 01</p>
-                    <p class="font-elegant text-lg">Us, Always</p>
-                </div>
+        <div class="max-w-4xl mx-auto px-6 pb-20">
 
-                <div class="glass-panel p-3 rounded-xl md:-mt-8">
-                    <div class="photo-container">
-                        <img src="photo2.jpeg" onerror="this.src='https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=800&auto=format&fit=crop'">
-                    </div>
-                    <p class="mt-4 font-royal text-[#D4AF37] text-xs">MEMORY 02</p>
-                    <p class="font-elegant text-lg">My Peace</p>
-                </div>
-
-                <div class="glass-panel p-3 rounded-xl">
-                    <div class="photo-container">
-                        <img src="photo3.jpeg" onerror="this.src='https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=800&auto=format&fit=crop'">
-                    </div>
-                    <p class="mt-4 font-royal text-[#D4AF37] text-xs">MEMORY 03</p>
-                    <p class="font-elegant text-lg">Forever</p>
-                </div>
-
-            </div>
-
-            <div class="glass-panel p-6 rounded-full inline-flex items-center gap-4 mb-20 max-w-md w-full justify-center">
-                <button onclick="document.getElementById('voice').play()" class="w-12 h-12 rounded-full bg-[#D4AF37] flex items-center justify-center text-black font-bold">▶</button>
-                <div class="text-left flex-1">
-                    <p class="text-[10px] uppercase tracking-widest text-gray-400">Adhi's Apology</p>
-                    <div class="h-1 bg-gray-700 w-full mt-2 rounded-full overflow-hidden">
-                        <div class="h-full bg-white w-1/2"></div>
+            <div class="glass-hud p-8 rounded-2xl mb-24 border border-[#D4AF37]/30">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <button onclick="toggleVoice()" id="play-btn" class="w-16 h-16 rounded-full bg-[#D4AF37] flex items-center justify-center text-black shadow-[0_0_20px_#D4AF37] hover:scale-105 transition-transform">
+                        <span id="play-icon" class="text-2xl font-bold">▶</span>
+                    </button>
+                    <div class="text-center md:text-left flex-1">
+                        <p class="font-royal text-[#D4AF37] text-sm mb-1">VOICE MESSAGE</p>
+                        <p class="text-xs text-gray-400 mb-3">Music will pause automatically while you listen.</p>
+                        <div class="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+                            <div id="voice-progress" class="h-full bg-white w-0 transition-all duration-100"></div>
+                        </div>
                     </div>
                 </div>
-                <audio id="voice" src="voice.mp3"></audio>
             </div>
 
-            <footer class="pb-10 text-gray-600 text-[10px] tracking-widest">
-                BUILT WITH TEARS & CODE BY ADHI
-            </footer>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
+                <div class="tilt-card glass-hud p-2 rounded-lg" data-tilt>
+                    <div class="h-64 overflow-hidden rounded mb-4 border border-white/10">
+                        <img src="photo1.jpeg" onerror="this.src='https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=600'" class="w-full h-full object-cover">
+                    </div>
+                    <p class="font-script text-2xl text-center">First Hug</p>
+                </div>
+                 <div class="tilt-card glass-hud p-2 rounded-lg md:-mt-10" data-tilt>
+                    <div class="h-64 overflow-hidden rounded mb-4 border border-white/10">
+                        <img src="photo2.jpeg" onerror="this.src='https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=600'" class="w-full h-full object-cover">
+                    </div>
+                    <p class="font-script text-2xl text-center">The Quarrel</p>
+                </div>
+                 <div class="tilt-card glass-hud p-2 rounded-lg" data-tilt>
+                    <div class="h-64 overflow-hidden rounded mb-4 border border-white/10">
+                        <img src="photo3.jpeg" onerror="this.src='https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600'" class="w-full h-full object-cover">
+                    </div>
+                    <p class="font-script text-2xl text-center">Forever</p>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <p class="font-royal text-sm text-[#D4AF37] mb-4">END OF TRANSMISSION</p>
+                <p class="text-[10px] text-gray-600">CODED WITH REGRET & LOVE</p>
+            </div>
+
         </div>
     </section>
 
     <canvas id="confetti" class="fixed inset-0 pointer-events-none z-[100]"></canvas>
 
     <script>
-        // --- 💎 1. SECURITY SETUP ---
-        // Paste your generated hash inside the quotes below
-        const SECRET_HASH = "65882a8e20dc7b30f6266f79fda3aacee0ad347ec3ad64d22ca32580fe9cced8"; 
+        // --- ⚙️ CONFIGURATION ---
+        const SECRET_HASH = "PUT_YOUR_GENERATED_HASH_HERE"; 
 
-        // --- 2. LOADER LOGIC ---
+        // --- 📡 SERVER ANIMATION ---
         window.onload = () => {
-            gsap.to("#progress-bar", {width: "100%", duration: 2.5, ease: "power2.inOut", onComplete: () => {
-                // Hide Loader
-                gsap.to("#loader", {opacity: 0, duration: 0.5, onComplete: () => {
-                    document.getElementById('loader').style.display = "none";
-                    // Show Login
-                    document.getElementById('login').classList.remove("hidden");
-                    gsap.fromTo("#login", {opacity: 0, scale: 0.9}, {opacity: 1, scale: 1, duration: 1});
+            const term = document.getElementById('terminal-text');
+            const lines = [
+                ">> CONNECTING TO SATELLITE...", 
+                ">> ENCRYPTING DATA PACKETS...", 
+                ">> SEARCHING FOR: HER HEART...", 
+                ">> HEARTBEAT DETECTED.", 
+                ">> ESTABLISHING SECURE LINK..."
+            ];
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                if(i < lines.length) {
+                    term.innerHTML += `<br>${lines[i]}`;
+                    i++;
+                }
+            }, 600);
+
+            // Loader Bar
+            gsap.to("#load-bar", {width: "100%", duration: 3.5, ease: "power1.inOut", onComplete: () => {
+                clearInterval(interval);
+                gsap.to("#screen-server", {opacity: 0, duration: 1, onComplete: () => {
+                    document.getElementById('screen-server').style.display = 'none';
+                    document.getElementById('screen-lock').classList.remove('hidden');
+                    gsap.fromTo("#screen-lock", {opacity: 0, scale: 0.95}, {opacity: 1, scale: 1, duration: 1});
                 }});
             }});
         };
 
-        // --- 3. LOGIN LOGIC ---
+        // --- 🔐 SECURITY ---
         async function checkAccess() {
             const input = document.getElementById('password').value;
-            
-            // Hashing Logic (Java-style security)
             const msgBuffer = new TextEncoder().encode(input.toLowerCase().trim());
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             const hashed = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
             
-            // Validate (Remove '|| true' after you paste your real hash!)
+            // REMOVE "|| true" AFTER PASTING HASH
             if (hashed === SECRET_HASH || SECRET_HASH === "PUT_YOUR_GENERATED_HASH_HERE") {
-                gsap.to("#login", {opacity: 0, y: -50, duration: 0.8, onComplete: () => {
-                    document.getElementById('login').classList.add("hidden");
-                    document.getElementById('apology').classList.remove("hidden");
-                    gsap.fromTo("#apology", {opacity: 0}, {opacity: 1, duration: 1});
+                gsap.to("#screen-lock", {y: -50, opacity: 0, duration: 0.8, onComplete: () => {
+                    document.getElementById('screen-lock').classList.add('hidden');
+                    document.getElementById('screen-apology').classList.remove('hidden');
+                    gsap.fromTo("#screen-apology", {opacity: 0}, {opacity: 1, duration: 1.5});
+                    
+                    // Start Background Music Softly
+                    const bgm = document.getElementById('bg-music');
+                    bgm.volume = 0.3;
+                    bgm.play().catch(e => console.log("Audio waiting for interaction"));
                 }});
             } else {
-                gsap.to("#error", {opacity: 1, yoyo: true, repeat: 1, duration: 2});
-                gsap.to(".glass-panel", {x: 10, yoyo: true, repeat: 5, duration: 0.05});
+                gsap.to("#error-msg", {opacity: 1, yoyo: true, repeat: 1});
+                gsap.to(".glass-hud", {x: 10, yoyo: true, repeat: 5, duration: 0.05});
             }
         }
 
-        // --- 4. FORGIVE BUTTON LOGIC ---
+        // --- ❤️ FORGIVENESS BUTTON ---
         let holdTimer;
         function startForgive() {
             document.getElementById('fill-circle').style.transform = "scale(1)";
             holdTimer = setTimeout(() => {
-                // Success: Go to Paradise
-                document.getElementById('bg-music').volume = 0.5;
-                document.getElementById('bg-music').play().catch(e => console.log(e));
-                
-                gsap.to("#apology", {opacity: 0, duration: 1.5, onComplete: () => {
-                    document.getElementById('apology').classList.add("hidden");
-                    // Unlock scrolling for main page
-                    document.body.style.height = "auto"; 
-                    document.body.style.overflowY = "auto";
+                // Success
+                gsap.to("#screen-apology", {opacity: 0, duration: 1, onComplete: () => {
+                    document.getElementById('screen-apology').classList.add('hidden');
+                    const paradise = document.getElementById('screen-paradise');
+                    paradise.classList.remove('hidden');
                     
-                    const paradise = document.getElementById('paradise');
-                    paradise.classList.remove("hidden");
+                    // Unlock Scroll
+                    document.body.style.overflow = "auto";
+                    
                     gsap.fromTo(paradise, {opacity: 0}, {opacity: 1, duration: 2});
                     startConfetti();
                 }});
-            }, 2000); // 2 seconds hold
+            }, 2000);
         }
-
         function stopForgive() {
             clearTimeout(holdTimer);
             document.getElementById('fill-circle').style.transform = "scale(0)";
         }
 
-        // --- 5. CONFETTI ---
+        // --- 🎙️ SMART AUDIO SYSTEM ---
+        const bgMusic = document.getElementById('bg-music');
+        const voiceNote = document.getElementById('voice-note');
+        const playBtn = document.getElementById('play-btn');
+        const playIcon = document.getElementById('play-icon');
+        let isPlayingVoice = false;
+
+        function toggleVoice() {
+            if(!isPlayingVoice) {
+                // FADE OUT MUSIC
+                gsap.to(bgMusic, {volume: 0, duration: 1, onComplete: () => bgMusic.pause()});
+                
+                // PLAY VOICE
+                voiceNote.play();
+                playIcon.innerText = "⏸";
+                isPlayingVoice = true;
+                
+                // Update Progress Bar
+                voiceNote.ontimeupdate = () => {
+                    const percent = (voiceNote.currentTime / voiceNote.duration) * 100;
+                    document.getElementById('voice-progress').style.width = percent + "%";
+                };
+
+                // ON END: FADE MUSIC BACK IN
+                voiceNote.onended = () => {
+                    isPlayingVoice = false;
+                    playIcon.innerText = "▶";
+                    bgMusic.play();
+                    gsap.to(bgMusic, {volume: 0.3, duration: 2});
+                };
+            } else {
+                voiceNote.pause();
+                playIcon.innerText = "▶";
+                isPlayingVoice = false;
+                bgMusic.play();
+                gsap.to(bgMusic, {volume: 0.3, duration: 1});
+            }
+        }
+
+        // --- 🎉 CONFETTI ---
         function startConfetti() {
             const canvas = document.getElementById('confetti');
             const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            
             let particles = [];
-            for(let i=0; i<100; i++) {
+            
+            for(let i=0; i<80; i++) {
                 particles.push({
-                    x: Math.random() * canvas.width, y: -10,
-                    size: Math.random() * 5 + 2,
-                    speed: Math.random() * 3 + 1,
-                    color: `hsl(${Math.random()*50 + 40}, 100%, 70%)` // Gold/Yellow hues
+                    x: Math.random() * canvas.width, y: -20,
+                    size: Math.random() * 4 + 1,
+                    speed: Math.random() * 2 + 1,
+                    color: '#D4AF37'
                 });
             }
-            
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 particles.forEach(p => {
                     p.y += p.speed;
-                    if(p.y > canvas.height) p.y = -10;
+                    if(p.y > canvas.height) p.y = -20;
                     ctx.fillStyle = p.color;
                     ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
                 });
@@ -299,6 +369,11 @@
             }
             animate();
         }
+
+        // Init Tilt
+        VanillaTilt.init(document.querySelectorAll(".tilt-card"), {
+            max: 15, speed: 400, glare: true, "max-glare": 0.2
+        });
     </script>
 </body>
 </html>
